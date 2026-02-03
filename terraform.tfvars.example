@@ -1,0 +1,67 @@
+# Copy this to terraform.tfvars and fill in your values
+# terraform.tfvars is gitignored for security
+#
+# Terraform state backend (Azure Storage) is in versions.tf – edit that file for
+# resource_group_name, storage_account_name, container_name, key (cannot use terraform.tfvars).
+
+resource_group_name   = "genguardx-client-rg"
+location              = "eastus"
+container_group_name  = "genguardx-client-group"
+dns_name_label        = "genguardx-client-unique"  # Must be globally unique
+
+# Azure Container Registry
+acr_login_server = "ggxsandbox.azurecr.io"
+
+# Option 1: Service Principal (RECOMMENDED for cross-account access)
+# Service Principal with AcrPull role - safe to share with clients
+acr_sp_client_id     = "client_id"
+acr_sp_client_secret = "client_secret"
+
+# Option 2: Admin Credentials (fallback, not recommended)
+# acr_admin_username = "ggxsandbox"
+# acr_admin_password = "your-acr-password"
+
+# Image configuration
+image_name    = "genguardx"
+image_version = "date-20260105-sha-172220b"  # Current image version - change when upgrading
+
+# Force app restart: set to a new value (e.g. "restart-1" or "restart-20260202") to deploy a new revision and restart the app; leave empty to skip
+# app_revision_suffix = "restart-1"
+
+# Workload profile: "" = Consumption (pay-per-use, max 2 vCPU + 4 Gi per replica); "D4" = Dedicated 16 Gi (reserved billing)
+# app_workload_profile = "D4"
+
+# Database (Terraform will create PostgreSQL Flexible Server)
+# Leave database_connection_string empty to use auto-created database
+database_connection_string = ""  # Empty = use auto-created database
+
+db_admin_username = "postgres"
+db_admin_password = "your-secure-password-here"  # Change this!
+db_name           = "genguardx"
+db_sku_name       = "GP_Standard_D2s_v3"  # General Purpose, 2 vCore, 8GB RAM (~$50/month); use B_Standard_B1ms for minimal cost (1 vCore, 2GB, can hit out-of-memory on migrations)
+db_storage_mb     = 32768  # 32GB
+
+# License key - required for corridor-api to start (passed as env var CORRIDOR_LICENSE_KEY)
+corridor_license_key = "your-license-key-from-corridor"
+
+# Optional: Secret environment variables (app uses CORRIDOR_ prefix for env vars)
+secret_environment_variables = {
+  # "SECRET_KEY" = "your-secret-value"
+}
+
+# Resource sizing (adjust based on needs)
+app_cpu      = 2
+app_memory   = 6
+worker_cpu   = 2
+worker_memory = 8
+jupyter_cpu  = 2
+jupyter_memory = 8
+redis_cpu    = 0.5
+redis_memory = 1
+
+# Tags
+tags = {
+  Environment = "production"
+  Client      = "client-name"
+  ManagedBy   = "terraform"
+}
