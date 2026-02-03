@@ -1,0 +1,15 @@
+# Copy to backend.azurerm.tfvars and set your values (do not commit backend.azurerm.tfvars).
+# Used by: terraform init -reconfigure -backend-config=backend.azurerm.tfvars
+#
+# Prerequisites: create in Azure (once):
+#   - Resource group (e.g. terraform-state-rg)
+#   - Storage account (name 3–24 lowercase alphanumeric, globally unique)
+#   - Container (e.g. tfstate) in that storage account
+#
+# Auth: set ARM_ACCESS_KEY to the storage account key, or use Azure CLI (az login)
+# and add use_azuread_auth = true to use Azure AD instead of access key.
+
+resource_group_name  = "terraform-state-rg"
+storage_account_name = "genguardxtfstate"   # must be globally unique
+container_name       = "tfstate"
+key                  = "genguardx.terraform.tfstate"
