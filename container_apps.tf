@@ -120,36 +120,6 @@ resource "azurerm_container_app" "app" {
     max_replicas     = 1
     revision_suffix  = var.app_revision_suffix != "" ? var.app_revision_suffix : null  # Set to force new revision (restart); e.g. "restart-1" or timestamp()
 
-    # Init container for database migrations (runs before main containers)
-    init_container {
-      name   = "db-migration"
-      image  = "${var.acr_login_server}/${var.image_name}:${var.image_version}"
-      cpu    = var.app_cpu
-      memory = "${var.app_memory}Gi"
-
-      env {
-        name  = "CORRIDOR_ENV"
-        value = var.environment
-      }
-
-      env {
-        name  = "CORRIDOR_SQLALCHEMY_DATABASE_URI"
-        value = var.database_connection_string != "" ? var.database_connection_string : "postgresql://${var.db_admin_username}:${urlencode(var.db_admin_password)}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${var.db_name}"
-      }
-
-      env {
-        name  = "CORRIDOR_LICENSE_KEY"
-        value = var.corridor_license_key
-      }
-
-      # Run database migration
-      args = [
-        "/bin/bash",
-        "-c",
-        "cd /opt/corridor && source venv/bin/activate && corridor-api db upgrade && echo 'Database migration completed'"
-      ]
-    }
-
     container {
       name   = "corridor-app"
       image  = "${var.acr_login_server}/${var.image_name}:${var.image_version}"
