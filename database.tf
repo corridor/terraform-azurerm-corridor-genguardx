@@ -59,7 +59,7 @@ resource "azurerm_postgresql_flexible_server_configuration" "max_prepared_transa
 resource "azurerm_postgresql_flexible_server_configuration" "max_connections" {
   name      = "max_connections"
   server_id = azurerm_postgresql_flexible_server.main.id
-  value     = "25"  # Minimum allowed by Azure Flexible Server (25-5000)
+  value     = "100"  # Minimum allowed by Azure Flexible Server (25-5000)
 }
 
 # Increase lock table size so migrations with many tables don't hit "out of shared memory"
