@@ -178,6 +178,11 @@ resource "azurerm_container_app" "app" {
         value = "/opt/corridor/data/results/{}.parquet"
       }
 
+      env {
+        name  = "CORRIDOR_SENTRY_CONFIG__environment"
+        value = var.client
+      }
+
       # Add secret environment variables
       dynamic "env" {
         for_each = var.secret_environment_variables

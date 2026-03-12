@@ -195,6 +195,12 @@ variable "redis_memory" {
   default     = 1
 }
 
+variable "client"{
+  description = "Name of the client"
+  type        = string
+  default     = "corridor"
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
