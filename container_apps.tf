@@ -153,8 +153,9 @@ resource "azurerm_container_app" "app" {
     container {
       name   = "corridor-app"
       image  = "${var.acr_login_server}/${var.image_name}:${var.image_version}"
-      cpu    = var.app_cpu
-      memory = "${var.app_memory}Gi"
+      # Single-app mode: give corridor-app the full Consumption budget minus nginx sidecar.
+      cpu    = 1.75
+      memory = "3.5Gi"
 
       env {
         name  = "CORRIDOR_ENV"
@@ -254,7 +255,7 @@ resource "azurerm_container_app" "app" {
         "cd /opt/corridor && source venv/bin/activate && exec venv/bin/corridor-app run"
       ]
     }
-
+/*
     # Worker container (sidecar - scales with app)
     container {
       name   = "corridor-worker"
@@ -420,7 +421,7 @@ resource "azurerm_container_app" "app" {
         "cd /opt/corridor && source venv/bin/activate && exec venv/bin/corridor-jupyter run"
       ]
     }
-
+*/
     # Nginx container (sidecar - reverse proxy/routing)
     container {
       name   = "nginx"
