@@ -67,6 +67,7 @@ See [variables.tf](variables.tf). Main inputs:
 | db_admin_username | PostgreSQL admin username | string | "postgres" | no |
 | db_admin_password | PostgreSQL admin password | string | n/a | yes |
 | db_name | PostgreSQL database name | string | "genguardx" | no |
+| db_zone | Optional PostgreSQL AZ override ("1","2","3"); null lets Azure choose | string | null | no |
 | tags | Tags to apply to resources | map(string) | See variables.tf | no |
 
 (Full list and descriptions are in [variables.tf](variables.tf).)

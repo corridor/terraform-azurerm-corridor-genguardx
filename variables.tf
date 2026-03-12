@@ -7,7 +7,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "eastus"
+  default     = "westus"
 }
 
 variable "container_group_name" {
@@ -125,6 +125,12 @@ variable "db_sku_name" {
   description = "PostgreSQL SKU"
   type        = string
   default     = "B_Standard_B1ms"
+}
+
+variable "db_zone" {
+  description = "Optional PostgreSQL availability zone override (\"1\", \"2\", \"3\"). Set null to let Azure choose."
+  type        = string
+  default     = null
 }
 
 variable "db_storage_mb" {

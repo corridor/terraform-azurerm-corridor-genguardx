@@ -8,7 +8,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   private_dns_zone_id    = null
   administrator_login    = var.db_admin_username
   administrator_password = var.db_admin_password
-  zone                   = "1"
+  zone                   = var.db_zone
 
   storage_mb = var.db_storage_mb
 
