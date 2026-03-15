@@ -183,6 +183,11 @@ resource "azurerm_container_app" "app" {
         value = var.client
       }
 
+      env {
+        name  = "TMPDIR"
+        value = "/tmp"
+      }
+
       # Add secret environment variables
       dynamic "env" {
         for_each = var.secret_environment_variables
@@ -323,9 +328,11 @@ resource "azurerm_container_app" "redis" {
   }
 
   # Internal ingress for service discovery (Redis is internal only)
+  # exposed_port is required for TCP transport so KEDA can reach Redis through ingress
   ingress {
     external_enabled = false
     target_port      = 6379
+    exposed_port     = 6379
     transport        = "tcp"
 
     traffic_weight {
