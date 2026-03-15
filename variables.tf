@@ -189,16 +189,10 @@ variable "jupyter_memory" {
   default     = 8
 }
 
-variable "redis_cpu" {
-  description = "CPU cores for Redis"
-  type        = number
-  default     = 0.5
-}
-
-variable "redis_memory" {
-  description = "Memory (GB) for Redis"
-  type        = number
-  default     = 1
+variable "redis_sku_name" {
+  description = "Azure Cache for Redis SKU (Basic, Standard, Premium). Basic C0 is cheapest (~$16/mo)."
+  type        = string
+  default     = "Basic"
 }
 
 variable "client"{

@@ -145,7 +145,7 @@ resource "azurerm_container_app" "app" {
 
       env {
         name  = "CORRIDOR_REDIS_HOST"
-        value = azurerm_container_app.redis.name
+        value = azurerm_redis_cache.main.hostname
       }
 
       env {
@@ -170,7 +170,7 @@ resource "azurerm_container_app" "app" {
 
       env {
         name  = "CORRIDOR_CELERY_BROKER_URL"
-        value = "redis://${azurerm_container_app.redis.name}:6379/0"
+        value = "redis://:${urlencode(azurerm_redis_cache.main.primary_access_key)}@${azurerm_redis_cache.main.hostname}:6379/0"
       }
 
       env {
@@ -306,40 +306,18 @@ resource "azurerm_container_app" "app" {
   tags = var.tags
 }
 
-# Redis Container App (internal only, no ingress)
-resource "azurerm_container_app" "redis" {
-  name                         = "${replace(var.resource_group_name, "-", "")}-redis"
-  container_app_environment_id = azurerm_container_app_environment.main.id
-  resource_group_name          = azurerm_resource_group.main.name
-  revision_mode                = "Single"
+# Azure Cache for Redis
+resource "azurerm_redis_cache" "main" {
+  name                = "${replace(var.resource_group_name, "-", "")}-redis"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  capacity            = 0
+  family              = "C"
+  sku_name            = var.redis_sku_name
+  enable_non_ssl_port = true
+  minimum_tls_version = "1.2"
 
-  template {
-    min_replicas = 1  # Keep Redis running (small cost)
-    max_replicas = 1
-
-    container {
-      name   = "redis"
-      image  = "redis:6.2-alpine"
-      cpu    = var.redis_cpu
-      memory = "${var.redis_memory}Gi"
-
-      args = ["redis-server", "--databases", "32"]
-    }
-  }
-
-  # Internal ingress for service discovery (Redis is internal only)
-  # exposed_port is required for TCP transport so KEDA can reach Redis through ingress
-  ingress {
-    external_enabled = false
-    target_port      = 6379
-    exposed_port     = 6379
-    transport        = "tcp"
-
-    traffic_weight {
-      percentage      = 100
-      latest_revision = true
-    }
-  }
+  redis_configuration {}
 
   tags = var.tags
 }
@@ -360,6 +338,11 @@ resource "azurerm_container_app" "worker" {
   secret {
     name  = "acr-password"
     value = var.acr_sp_client_id != "" ? var.acr_sp_client_secret : var.acr_admin_password
+  }
+
+  secret {
+    name  = "redis-password"
+    value = azurerm_redis_cache.main.primary_access_key
   }
 
   dynamic "secret" {
@@ -387,7 +370,7 @@ resource "azurerm_container_app" "worker" {
 
       env {
         name  = "CORRIDOR_REDIS_HOST"
-        value = azurerm_container_app.redis.name
+        value = azurerm_redis_cache.main.hostname
       }
 
       env {
@@ -397,7 +380,7 @@ resource "azurerm_container_app" "worker" {
 
       env {
         name  = "CORRIDOR_CELERY_BROKER_URL"
-        value = "redis://${azurerm_container_app.redis.name}:6379/0"
+        value = "redis://:${urlencode(azurerm_redis_cache.main.primary_access_key)}@${azurerm_redis_cache.main.hostname}:6379/0"
       }
 
       env {
@@ -471,9 +454,13 @@ resource "azurerm_container_app" "worker" {
       name             = "celery-queue"
       custom_rule_type = "redis"
       metadata = {
-        address    = "${azurerm_container_app.redis.name}.internal.${azurerm_container_app_environment.main.default_domain}:6379"
+        address    = "${azurerm_redis_cache.main.hostname}:6379"
         listName   = "celery"
         listLength = "1"
+      }
+      authentication {
+        secret_name       = "redis-password"
+        trigger_parameter = "password"
       }
     }
   }
