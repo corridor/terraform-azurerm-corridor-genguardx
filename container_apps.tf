@@ -355,11 +355,6 @@ resource "azurerm_container_app" "worker" {
     value = var.acr_sp_client_id != "" ? var.acr_sp_client_secret : var.acr_admin_password
   }
 
-  secret {
-    name  = "redis-conn"
-    value = "redis://${azurerm_container_app.redis.name}:6379/0"
-  }
-
   dynamic "secret" {
     for_each = var.secret_environment_variables
     content {
@@ -423,6 +418,11 @@ resource "azurerm_container_app" "worker" {
         value = var.client
       }
 
+      env {
+        name  = "TMPDIR"
+        value = "/tmp"
+      }
+
       dynamic "env" {
         for_each = var.secret_environment_variables
         content {
@@ -464,13 +464,9 @@ resource "azurerm_container_app" "worker" {
       name             = "celery-queue"
       custom_rule_type = "redis"
       metadata = {
-        address    = "${azurerm_container_app.redis.name}:6379"
+        address    = "${azurerm_container_app.redis.name}.internal.${azurerm_container_app_environment.main.default_domain}:6379"
         listName   = "celery"
         listLength = "1"
-      }
-      authentication {
-        secret_name       = "redis-conn"
-        trigger_parameter = "address"
       }
     }
   }
