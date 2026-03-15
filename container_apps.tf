@@ -357,7 +357,7 @@ resource "azurerm_container_app" "worker" {
 
   secret {
     name  = "redis-conn"
-    value = "redis://${azurerm_container_app.redis.name}:6379/0"
+    value = "redis://${azurerm_container_app.redis.name}.internal.${azurerm_container_app_environment.main.default_domain}:6379/0"
   }
 
   dynamic "secret" {
@@ -464,7 +464,7 @@ resource "azurerm_container_app" "worker" {
       name             = "celery-queue"
       custom_rule_type = "redis"
       metadata = {
-        address    = "${azurerm_container_app.redis.name}:6379"
+        address    = "${azurerm_container_app.redis.name}.internal.${azurerm_container_app_environment.main.default_domain}:6379"
         listName   = "celery"
         listLength = "1"
       }
