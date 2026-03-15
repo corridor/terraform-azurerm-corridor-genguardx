@@ -230,173 +230,13 @@ resource "azurerm_container_app" "app" {
         "cd /opt/corridor && source venv/bin/activate && exec venv/bin/corridor-app run"
       ]
     }
-/*
-    # Worker container (sidecar - scales with app)
-    container {
-      name   = "corridor-worker"
-      image  = "${var.acr_login_server}/${var.image_name}:${var.image_version}"
-      cpu    = var.worker_cpu
-      memory = "${var.worker_memory}Gi"
-
-      env {
-        name  = "CORRIDOR_ENV"
-        value = var.environment
-      }
-
-      env {
-        name  = "CORRIDOR_APP_HOST"
-        value = "0.0.0.0"
-      }
-
-      env {
-        name  = "CORRIDOR_APP_PROCESSES"
-        value = "1"
-      }
-
-      env {
-        name  = "CORRIDOR_REDIS_HOST"
-        value = azurerm_container_app.redis.name
-      }
-
-      env {
-        name  = "CORRIDOR_REDIS_PORT"
-        value = "6379"
-      }
-
-      env {
-        name  = "CORRIDOR_CELERY_BROKER_URL"
-        value = "redis://${azurerm_container_app.redis.name}:6379/0"
-      }
-
-      env {
-        name  = "CORRIDOR_API_URL"
-        value = "https://${replace(var.resource_group_name, "-", "")}-app.${azurerm_container_app_environment.main.default_domain}/corr-api"
-      }
-
-      env {
-        name  = "CORRIDOR_SQLALCHEMY_DATABASE_URI"
-        value = var.database_connection_string != "" ? var.database_connection_string : "postgresql://${var.db_admin_username}:${urlencode(var.db_admin_password)}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${var.db_name}"
-      }
-
-      env {
-        name  = "CORRIDOR_LICENSE_KEY"
-        value = var.corridor_license_key
-      }
-
-      env {
-        name  = "CORRIDOR_OUTPUT_DATA_LOCATION"
-        value = "/opt/corridor/data/results/{}.parquet"
-      }
-
-      dynamic "env" {
-        for_each = var.secret_environment_variables
-        content {
-          name        = replace(env.key, "-", "_")
-          secret_name = replace(env.key, "-", "_")
-        }
-      }
-
-      volume_mounts {
-        name = "data"
-        path = "/opt/corridor/data"
-      }
-
-      volume_mounts {
-        name = "uploads"
-        path = "/opt/corridor/uploads"
-      }
-
-      # Worker startup: wait for corridor-app on 127.0.0.1:5002 (shared localhost in same replica) then run
-      args = [
-        "/bin/bash",
-        "-c",
-        "cd /opt/corridor && source venv/bin/activate && for i in $(seq 1 90); do python3 -c \"import socket; s=socket.create_connection(('127.0.0.1',5002),timeout=2); s.close()\" 2>/dev/null && break; sleep 2; done && exec venv/bin/corridor-worker run"
-      ]
-    }
-
-    # Jupyter container (sidecar - scales with app)
+    /*
+    # Jupyter container (sidecar)
     container {
       name   = "corridor-jupyter"
-      image  = "${var.acr_login_server}/${var.image_name}:${var.image_version}"
-      cpu    = var.jupyter_cpu
-      memory = "${var.jupyter_memory}Gi"
-
-      env {
-        name  = "CORRIDOR_ENV"
-        value = var.environment
-      }
-
-      env {
-        name  = "CORRIDOR_APP_HOST"
-        value = "0.0.0.0"
-      }
-
-      env {
-        name  = "CORRIDOR_APP_PROCESSES"
-        value = "1"
-      }
-
-      env {
-        name  = "CORRIDOR_REDIS_HOST"
-        value = azurerm_container_app.redis.name
-      }
-
-      env {
-        name  = "CORRIDOR_REDIS_PORT"
-        value = "6379"
-      }
-
-      env {
-        name  = "CORRIDOR_CELERY_BROKER_URL"
-        value = "redis://${azurerm_container_app.redis.name}:6379/0"
-      }
-
-      env {
-        name  = "CORRIDOR_API_URL"
-        value = "https://${replace(var.resource_group_name, "-", "")}-app.${azurerm_container_app_environment.main.default_domain}/corr-api"
-      }
-
-      env {
-        name  = "CORRIDOR_SQLALCHEMY_DATABASE_URI"
-        value = var.database_connection_string != "" ? var.database_connection_string : "postgresql://${var.db_admin_username}:${urlencode(var.db_admin_password)}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${var.db_name}"
-      }
-
-      env {
-        name  = "CORRIDOR_LICENSE_KEY"
-        value = var.corridor_license_key
-      }
-
-      env {
-        name  = "CORRIDOR_OUTPUT_DATA_LOCATION"
-        value = "/opt/corridor/data/results/{}.parquet"
-      }
-
-      dynamic "env" {
-        for_each = var.secret_environment_variables
-        content {
-          name        = replace(env.key, "-", "_")
-          secret_name = replace(env.key, "-", "_")
-        }
-      }
-
-      volume_mounts {
-        name = "notebooks"
-        path = "/opt/corridor/notebooks"
-      }
-
-      volume_mounts {
-        name = "config"
-        path = "/opt/corridor/config"
-      }
-
-      # Jupyter startup command
-      args = [
-        "/bin/bash",
-        "-c",
-        "cd /opt/corridor && source venv/bin/activate && exec venv/bin/corridor-jupyter run"
-      ]
+      ...
     }
-*/
+    */
     # Nginx container (sidecar - reverse proxy/routing)
     container {
       name   = "nginx"
@@ -461,9 +301,6 @@ resource "azurerm_container_app" "app" {
   tags = var.tags
 }
 
-# Worker, Jupyter, and Nginx are now sidecar containers in the app Container App above
-# This ensures all containers scale together automatically
-
 # Redis Container App (internal only, no ingress)
 resource "azurerm_container_app" "redis" {
   name                         = "${replace(var.resource_group_name, "-", "")}-redis"
@@ -494,6 +331,147 @@ resource "azurerm_container_app" "redis" {
     traffic_weight {
       percentage      = 100
       latest_revision = true
+    }
+  }
+
+  tags = var.tags
+}
+
+# Worker Container App
+resource "azurerm_container_app" "worker" {
+  name                         = "${replace(var.resource_group_name, "-", "")}-worker"
+  container_app_environment_id = azurerm_container_app_environment.main.id
+  resource_group_name          = azurerm_resource_group.main.name
+  revision_mode                = "Single"
+
+  registry {
+    server               = var.acr_login_server
+    username             = var.acr_sp_client_id != "" ? var.acr_sp_client_id : var.acr_admin_username
+    password_secret_name = "acr-password"
+  }
+
+  secret {
+    name  = "acr-password"
+    value = var.acr_sp_client_id != "" ? var.acr_sp_client_secret : var.acr_admin_password
+  }
+
+  secret {
+    name  = "redis-conn"
+    value = "redis://${azurerm_container_app.redis.name}:6379/0"
+  }
+
+  dynamic "secret" {
+    for_each = var.secret_environment_variables
+    content {
+      name  = replace(secret.key, "-", "_")
+      value = secret.value
+    }
+  }
+
+  template {
+    min_replicas = 0
+    max_replicas = var.worker_max_replicas
+
+    container {
+      name   = "corridor-worker"
+      image  = "${var.acr_login_server}/${var.image_name}:${var.image_version}"
+      cpu    = var.worker_cpu
+      memory = "${var.worker_memory}Gi"
+
+      env {
+        name  = "CORRIDOR_ENV"
+        value = var.environment
+      }
+
+      env {
+        name  = "CORRIDOR_REDIS_HOST"
+        value = azurerm_container_app.redis.name
+      }
+
+      env {
+        name  = "CORRIDOR_REDIS_PORT"
+        value = "6379"
+      }
+
+      env {
+        name  = "CORRIDOR_CELERY_BROKER_URL"
+        value = "redis://${azurerm_container_app.redis.name}:6379/0"
+      }
+
+      env {
+        name  = "CORRIDOR_API_URL"
+        value = "https://${replace(var.resource_group_name, "-", "")}-app.${azurerm_container_app_environment.main.default_domain}/corr-api"
+      }
+
+      env {
+        name  = "CORRIDOR_SQLALCHEMY_DATABASE_URI"
+        value = var.database_connection_string != "" ? var.database_connection_string : "postgresql://${var.db_admin_username}:${urlencode(var.db_admin_password)}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${var.db_name}"
+      }
+
+      env {
+        name  = "CORRIDOR_LICENSE_KEY"
+        value = var.corridor_license_key
+      }
+
+      env {
+        name  = "CORRIDOR_OUTPUT_DATA_LOCATION"
+        value = "/opt/corridor/data/results/{}.parquet"
+      }
+
+      env {
+        name  = "CORRIDOR_SENTRY_CONFIG__environment"
+        value = var.client
+      }
+
+      dynamic "env" {
+        for_each = var.secret_environment_variables
+        content {
+          name        = replace(env.key, "-", "_")
+          secret_name = replace(env.key, "-", "_")
+        }
+      }
+
+      volume_mounts {
+        name = "data"
+        path = "/opt/corridor/data"
+      }
+
+      volume_mounts {
+        name = "uploads"
+        path = "/opt/corridor/uploads"
+      }
+
+      args = [
+        "/bin/bash",
+        "-c",
+        "cd /opt/corridor && source venv/bin/activate && exec venv/bin/corridor-worker run"
+      ]
+    }
+
+    volume {
+      name         = "data"
+      storage_type = "AzureFile"
+      storage_name = azurerm_container_app_environment_storage.data.name
+    }
+
+    volume {
+      name         = "uploads"
+      storage_type = "AzureFile"
+      storage_name = azurerm_container_app_environment_storage.uploads.name
+    }
+
+    custom_scale_rule {
+      name             = "celery-queue"
+      custom_rule_type = "redis"
+      metadata = {
+        address    = "${azurerm_container_app.redis.name}:6379"
+        listName   = "celery"
+        listLength = "1"
+      }
+      authentication {
+        secret_name       = "redis-conn"
+        trigger_parameter = "address"
+      }
     }
   }
 

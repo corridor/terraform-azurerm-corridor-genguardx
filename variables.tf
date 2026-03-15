@@ -168,7 +168,13 @@ variable "worker_cpu" {
 variable "worker_memory" {
   description = "Memory (GB) for corridor-worker"
   type        = number
-  default     = 8
+  default     = 4
+}
+
+variable "worker_max_replicas" {
+  description = "Max worker replicas (scales via KEDA on Redis queue length)"
+  type        = number
+  default     = 1
 }
 
 variable "jupyter_cpu" {
