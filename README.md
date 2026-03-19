@@ -56,6 +56,7 @@ See [variables.tf](variables.tf). Main inputs:
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | resource_group_name | Name of the resource group | string | "genguardx-rg" | no |
+| create_resource_group | Whether to create a new resource group (false = use existing) | bool | true | no |
 | location | Azure region | string | "eastus" | no |
 | acr_login_server | ACR login server | string | n/a | yes |
 | acr_sp_client_id | Service Principal Client ID for ACR | string | "" | no |

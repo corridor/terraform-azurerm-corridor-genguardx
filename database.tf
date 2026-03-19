@@ -1,8 +1,8 @@
 # Azure Database for PostgreSQL Flexible Server
 resource "azurerm_postgresql_flexible_server" "main" {
   name                   = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-postgres"
-  resource_group_name    = azurerm_resource_group.main.name
-  location               = azurerm_resource_group.main.location
+  resource_group_name    = local.resource_group_name
+  location               = local.location
   version                = "15"
   delegated_subnet_id    = null  # Use public access for simplicity
   private_dns_zone_id    = null
