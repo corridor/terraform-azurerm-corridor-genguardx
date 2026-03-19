@@ -1,6 +1,6 @@
 # Azure Database for PostgreSQL Flexible Server
 resource "azurerm_postgresql_flexible_server" "main" {
-  name                   = "${replace(var.resource_group_name, "-", "")}-postgres"
+  name                   = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-postgres"
   resource_group_name    = azurerm_resource_group.main.name
   location               = azurerm_resource_group.main.location
   version                = "15"

@@ -2,7 +2,7 @@
 # When app_workload_profile is set (e.g. D4), workload profiles are added so the main app can use 16 Gi per replica.
 # If the environment was created without workload profiles, adding them forces recreation (destroy + create) of the environment.
 resource "azurerm_container_app_environment" "main" {
-  name                       = "${replace(var.resource_group_name, "-", "")}-env"
+  name                       = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-env"
   location                   = azurerm_resource_group.main.location
   resource_group_name        = azurerm_resource_group.main.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
@@ -32,7 +32,7 @@ resource "azurerm_container_app_environment" "main" {
 
 # Log Analytics Workspace (required for Container Apps Environment)
 resource "azurerm_log_analytics_workspace" "main" {
-  name                = "${replace(var.resource_group_name, "-", "")}-logs"
+  name                = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-logs"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   sku                 = "PerGB2018"
@@ -89,7 +89,7 @@ resource "azurerm_container_app_environment_storage" "config" {
 
 # Main Application Container App
 resource "azurerm_container_app" "app" {
-  name                         = "${replace(var.resource_group_name, "-", "")}-app"
+  name                         = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-app"
   container_app_environment_id = azurerm_container_app_environment.main.id
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
@@ -155,7 +155,7 @@ resource "azurerm_container_app" "app" {
 
       env {
         name  = "CORRIDOR_API_URL"
-        value = "https://${replace(var.resource_group_name, "-", "")}-app.${azurerm_container_app_environment.main.default_domain}/corr-api"
+        value = "https://${replace(replace(var.resource_group_name, "_", ""), "-", "")}-app.${azurerm_container_app_environment.main.default_domain}/corr-api"
       }
 
       env {
@@ -308,7 +308,7 @@ resource "azurerm_container_app" "app" {
 
 # Azure Cache for Redis
 resource "azurerm_redis_cache" "main" {
-  name                = "${replace(var.resource_group_name, "-", "")}-redis"
+  name                = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-redis"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   capacity            = 0
@@ -324,7 +324,7 @@ resource "azurerm_redis_cache" "main" {
 
 # Worker Container App
 resource "azurerm_container_app" "worker" {
-  name                         = "${replace(var.resource_group_name, "-", "")}-worker"
+  name                         = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-worker"
   container_app_environment_id = azurerm_container_app_environment.main.id
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
@@ -385,7 +385,7 @@ resource "azurerm_container_app" "worker" {
 
       env {
         name  = "CORRIDOR_API_URL"
-        value = "https://${replace(var.resource_group_name, "-", "")}-app.${azurerm_container_app_environment.main.default_domain}/corr-api"
+        value = "https://${replace(replace(var.resource_group_name, "_", ""), "-", "")}-app.${azurerm_container_app_environment.main.default_domain}/corr-api"
       }
 
       env {
