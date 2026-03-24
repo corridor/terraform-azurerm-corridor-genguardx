@@ -18,7 +18,7 @@ brew install terraform azure-cli
 
 ## Step 1: Get Credentials from Corridor
 
-Contact **support@corridorplatforms.com** for:
+Contact **admin@genguardx.ai** for:
 - `acr_login_server`
 - `acr_sp_client_id` and `acr_sp_client_secret`
 - `image_version` (e.g., `date-20260316-sha-7cf949f`)
@@ -117,4 +117,4 @@ echo "    key                  = \"genguardx.terraform.tfstate\""
 echo "  }"
 ```
 
-**Need help?** support@corridorplatforms.com
+**Need help?** admin@genguardx.ai

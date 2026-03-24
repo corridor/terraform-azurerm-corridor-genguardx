@@ -263,17 +263,17 @@ resource "azurerm_container_app" "app" {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Loading</title>
+    <title>Application Loading - GenGuardX</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            color: #1a1a1a;
         }
         .container {
             text-align: center;
@@ -281,53 +281,54 @@ resource "azurerm_container_app" "app" {
             max-width: 600px;
         }
         .logo {
-            font-size: 3rem;
             margin-bottom: 2rem;
-            animation: pulse 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo img {
+            height: 40px;
+            width: auto;
+            max-width: min(100%, 320px);
+        }
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
         }
         h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 1rem;
             font-weight: 600;
+            color: #1a1a1a;
         }
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            opacity: 0.95;
+        .subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 2rem;
             line-height: 1.6;
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 2rem auto;
+        .info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
         }
         .contact {
+            font-size: 0.875rem;
+            color: #666;
             margin-top: 2rem;
-            padding: 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
         }
         .contact a {
-            color: #fff;
+            color: #0066ff;
             text-decoration: none;
-            font-weight: 600;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
-            transition: border-color 0.3s;
         }
         .contact a:hover {
-            border-bottom-color: #fff;
+            text-decoration: underline;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
     </style>
     <script>
@@ -338,15 +339,14 @@ resource "azurerm_container_app" "app" {
 </head>
 <body>
     <div class="container">
-        <div class="logo">🚀</div>
-        <h1>Application Loading</h1>
-        <p>Your application is starting up. This typically takes 2-5 minutes.</p>
-        <div class="spinner"></div>
-        <p style="font-size: 1rem; opacity: 0.8;">The page will automatically refresh in a few seconds...</p>
-        <div class="contact">
-            <p style="font-size: 1rem; margin-bottom: 0.5rem;">If the issue persists after 5 minutes:</p>
-            <p style="font-size: 1rem;">Contact support at <a href="mailto:support@corridorplatforms.com">support@corridorplatforms.com</a></p>
+        <div class="logo">
+            <img src="https://ggx.corridorplatforms.com/assets/logo-for-white.svg" alt="GenGuardX" />
         </div>
+        <div class="icon">⏳</div>
+        <h1>Application is loading up</h1>
+        <p class="subtitle">Your application is starting. This typically takes 2-5 minutes.</p>
+        <p class="info">This page will automatically refresh every 10 seconds.</p>
+        <p class="contact">If the issue persists after 5 minutes, contact support at <a href="mailto:admin@genguardx.ai">admin@genguardx.ai</a></p>
     </div>
 </body>
 </html>
