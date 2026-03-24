@@ -256,7 +256,127 @@ resource "azurerm_container_app" "app" {
       args = [
         "/bin/sh",
         "-c",
-        "cat > /etc/nginx/nginx.conf << 'NGX'\nevents { worker_connections 1024; }\nhttp {\n  upstream app { server 127.0.0.1:5002; }\n  upstream jupyter { server 127.0.0.1:5003; }\n  server {\n    listen 80;\n    client_max_body_size 0;\n    proxy_connect_timeout 60s;\n    proxy_read_timeout 3600s;\n    proxy_send_timeout 3600s;\n    proxy_request_buffering off;\n    location = /health { default_type text/plain; return 200 'ok'; }\n    location /jupyter { proxy_pass http://jupyter; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto https; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection \"upgrade\"; }\n    location /corr-api { proxy_pass http://app; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto https; }\n    location / { proxy_pass http://app; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto https; }\n  }\n}\nNGX\nexec nginx -g 'daemon off;'"
+        <<-EOT
+        cat > /usr/share/nginx/html/502.html << 'HTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Loading</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        .contact {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .contact a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            transition: border-color 0.3s;
+        }
+        .contact a:hover {
+            border-bottom-color: #fff;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+    </style>
+    <script>
+        setTimeout(function() {
+            location.reload();
+        }, 10000);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚀</div>
+        <h1>Application Loading</h1>
+        <p>Your application is starting up. This typically takes 2-5 minutes.</p>
+        <div class="spinner"></div>
+        <p style="font-size: 1rem; opacity: 0.8;">The page will automatically refresh in a few seconds...</p>
+        <div class="contact">
+            <p style="font-size: 1rem; margin-bottom: 0.5rem;">If the issue persists after 5 minutes:</p>
+            <p style="font-size: 1rem;">Contact support at <a href="mailto:support@corridorplatforms.com">support@corridorplatforms.com</a></p>
+        </div>
+    </div>
+</body>
+</html>
+HTML
+        cat > /etc/nginx/nginx.conf << 'NGX'
+events { worker_connections 1024; }
+http {
+  upstream app { server 127.0.0.1:5002; }
+  upstream jupyter { server 127.0.0.1:5003; }
+  server {
+    listen 80;
+    client_max_body_size 0;
+    proxy_connect_timeout 60s;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+    proxy_request_buffering off;
+    error_page 502 503 504 /502.html;
+    location = /502.html {
+      root /usr/share/nginx/html;
+      internal;
+    }
+    location = /health { default_type text/plain; return 200 'ok'; }
+    location /jupyter { proxy_pass http://jupyter; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto https; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+    location /corr-api { proxy_pass http://app; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto https; }
+    location / { proxy_pass http://app; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto https; }
+  }
+}
+NGX
+        exec nginx -g 'daemon off;'
+        EOT
       ]
     }
 
