@@ -3,8 +3,8 @@
 # If the environment was created without workload profiles, adding them forces recreation (destroy + create) of the environment.
 resource "azurerm_container_app_environment" "main" {
   name                       = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-env"
-  location                   = local.location
-  resource_group_name        = local.resource_group_name
+  location                   = azurerm_resource_group.main.location
+  resource_group_name        = azurerm_resource_group.main.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
 
   dynamic "workload_profile" {
@@ -33,8 +33,8 @@ resource "azurerm_container_app_environment" "main" {
 # Log Analytics Workspace (required for Container Apps Environment)
 resource "azurerm_log_analytics_workspace" "main" {
   name                = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-logs"
-  location            = local.location
-  resource_group_name = local.resource_group_name
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
   sku                 = "PerGB2018"
   retention_in_days   = 30
   
@@ -91,7 +91,7 @@ resource "azurerm_container_app_environment_storage" "config" {
 resource "azurerm_container_app" "app" {
   name                         = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-app"
   container_app_environment_id = azurerm_container_app_environment.main.id
-  resource_group_name          = local.resource_group_name
+  resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
   workload_profile_name        = var.app_workload_profile != "" ? var.app_workload_profile : null  # null = Consumption (4 Gi max); D4 = 16 Gi per replica
 
@@ -429,8 +429,8 @@ NGX
 # Azure Cache for Redis
 resource "azurerm_redis_cache" "main" {
   name                = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-redis"
-  location            = local.location
-  resource_group_name = local.resource_group_name
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
   capacity            = 0
   family              = "C"
   sku_name            = var.redis_sku_name
@@ -446,7 +446,7 @@ resource "azurerm_redis_cache" "main" {
 resource "azurerm_container_app" "worker" {
   name                         = "${replace(replace(var.resource_group_name, "-", ""), "_", "")}-worker"
   container_app_environment_id = azurerm_container_app_environment.main.id
-  resource_group_name          = local.resource_group_name
+  resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
 
   registry {
