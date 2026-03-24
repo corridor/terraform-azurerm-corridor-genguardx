@@ -2,6 +2,15 @@
 
 Deploy Corridor GenGuardX (app, worker, Jupyter, Redis, PostgreSQL, Nginx) on **Azure Container Apps** with scale-to-zero, Azure Files, and optional Dedicated workload profiles.
 
+## Quick Start
+
+**New to this module?** See [QUICKSTART.md](QUICKSTART.md) for step-by-step instructions including:
+- Installing prerequisites (Terraform, Azure CLI, Docker)
+- Getting credentials from Corridor support
+- Creating Azure resources
+- Migrating images from AWS ECR to Azure ACR
+- Complete deployment walkthrough
+
 ## Usage
 
 **As a module** (from Terraform Registry):
@@ -57,18 +66,19 @@ See [variables.tf](variables.tf). Main inputs:
 |------|-------------|------|---------|:--------:|
 | resource_group_name | Name of the resource group | string | "genguardx-rg" | no |
 | location | Azure region | string | "eastus" | no |
-| acr_login_server | ACR login server | string | n/a | yes |
-| acr_sp_client_id | Service Principal Client ID for ACR | string | "" | no |
-| acr_sp_client_secret | Service Principal Client Secret for ACR | string | "" | no |
+| acr_login_server | ACR login server (get from Corridor support) | string | n/a | yes |
+| acr_sp_client_id | Service Principal Client ID for ACR (get from Corridor support) | string | "" | yes* |
+| acr_sp_client_secret | Service Principal Client Secret for ACR (get from Corridor support) | string | "" | yes* |
 | image_name | Container image name in ACR | string | "genguardx" | no |
-| image_version | Container image tag | string | "latest" | no |
-| corridor_license_key | License key for corridor-api | string | "" | no |
+| image_version | Container image tag (get from Corridor support) | string | "latest" | no |
+| corridor_license_key | License key for corridor-api (get from Corridor support) | string | "" | yes |
 | app_workload_profile | "" = Consumption (2 vCPU, 4 Gi); "D4" = Dedicated 16 Gi | string | "" | no |
 | db_admin_username | PostgreSQL admin username | string | "postgres" | no |
 | db_admin_password | PostgreSQL admin password | string | n/a | yes |
 | db_name | PostgreSQL database name | string | "genguardx" | no |
 | db_zone | Optional PostgreSQL AZ override ("1","2","3"); null lets Azure choose | string | null | no |
 | tags | Tags to apply to resources | map(string) | See variables.tf | no |
+
 
 (Full list and descriptions are in [variables.tf](variables.tf).)
 
