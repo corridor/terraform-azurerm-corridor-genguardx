@@ -55,8 +55,8 @@ provider "azurerm" {
   features {}
 }
 
-module "corridor_genguardx" {
-  source  = "corridor/corridor-genguardx/azurerm"
+module "ggx" {
+  source  = "corridor/ggx/azure"
   version = "~> 1.0"
 
   resource_group_name   = "my-genguardx-rg"
@@ -77,7 +77,7 @@ module "corridor_genguardx" {
 }
 
 output "app_url" {
-  value = module.corridor_genguardx.app_url
+  value = module.ggx.app_url
 }
 ```
 

@@ -16,8 +16,8 @@ Deploy Corridor GenGuardX (app, worker, Jupyter, Redis, PostgreSQL, Nginx) on **
 **As a module** (from Terraform Registry):
 
 ```hcl
-module "corridor_genguardx" {
-  source  = "corridor/corridor-genguardx/azurerm"
+module "ggx" {
+  source  = "corridor/ggx/azure"
   version = "~> 1.0"
 
   resource_group_name  = "my-genguardx-rg"
@@ -102,4 +102,3 @@ See [variables.tf](variables.tf). Main inputs:
 ## Backend (state)
 
 This module does **not** configure a backend. Configure the backend in the root module that uses this module, or when using this repo standalone uncomment the `backend "azurerm"` block in [versions.tf](versions.tf) and set your Azure Storage details.
-
